@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show id="ps_com_tommy_chatbot_domain_Customer" object="${customer}" path="/customers" z="rauTUhEyGTL0slockQDISUPh1oo=">
+        <field:display field="firstName" id="s_com_tommy_chatbot_domain_Customer_firstName" object="${customer}" z="s4Kj7haZq4oFFfcqUsEy1GSMr8Y="/>
+        <field:display field="lastName" id="s_com_tommy_chatbot_domain_Customer_lastName" object="${customer}" z="W2UtlEQ4sN3xUsclo7HY0mWsVm4="/>
+    </page:show>
+</div>
