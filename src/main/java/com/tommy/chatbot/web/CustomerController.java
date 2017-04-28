@@ -1,4 +1,5 @@
 package com.tommy.chatbot.web;
+import com.mongodb.BasicDBObject;
 import com.tommy.chatbot.service.CustomerMongoService;
 import com.tommy.chatbot.domain.Customer;
 import com.tommy.chatbot.domain.Statements;
@@ -62,9 +63,13 @@ public class CustomerController {
         System.out.println("ask = " +ask);
         Statements statements=new Statements();
 
-        BasicQuery query = new BasicQuery("{ \"in_response_to.text\" : { $regex: '*."+ask+".$' } }");
-        List<Statements> statementsList= mongoOperation.find(query,Statements.class);
-       // List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(ask);
+
+        /*BasicDBObject query = new BasicDBObject("statements",new BasicDBObject("in_response_to.text", new BasicDBObject("$regex", "^"+ask+"")));
+        System.out.println(query.toString());
+        BasicQuery queryTwo = new BasicQuery("{\"in_response_to.text\": {$regex : '.*" + ask + ".*'} }");
+        System.out.println(queryTwo.toString());*/
+       // List<Statements> statementsList= mongoOperation.find(queryTwo,Statements.class);
+        List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(".*"+ask+".*"+"你.*");
         int ran= (int)(Math.random()*42+1);
         int i=ran % statementsList.size();
         System.out.println("answer size = " +statementsList.size());

@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.io.ByteStreams;
+import com.huaban.analysis.jieba.JiebaSegmenter;
+import com.huaban.analysis.jieba.SegToken;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.CallbackRequest;
@@ -12,7 +14,9 @@ import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.response.BotApiResponse;
+import com.tommy.chatbot.domain.LineMessage;
 import com.tommy.chatbot.domain.Statements;
+import com.tommy.chatbot.service.LineMessageMongoService;
 import com.tommy.chatbot.service.StatementsMongoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,6 +27,7 @@ import retrofit2.Response;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -38,6 +43,8 @@ public class LineBotController {
 
     @Autowired
     private StatementsMongoService statementsMongoService;
+    @Autowired
+    private LineMessageMongoService lineMessageService;
 
     @RequestMapping(value = "block",method ={RequestMethod.GET,RequestMethod.POST}, produces = "application/json")
     @ResponseBody
@@ -56,11 +63,20 @@ public class LineBotController {
                 MessageEvent env=(MessageEvent) event;
                 MessageEvent<TextMessageContent> askContent=(MessageEvent<TextMessageContent>) event;
                 TextMessage ask=new TextMessage(askContent.getMessage().getText());
+                String askForJeiba=".*";
                 String responseAns= "對不起,我聽不懂你再說什麼";
                 try {
-                    List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(ask.getText());
+                    JiebaSegmenter segmenter = new JiebaSegmenter();
+                    System.out.println(segmenter.process(ask.getText(), JiebaSegmenter.SegMode.SEARCH).toString());
+                    List<SegToken> segTokenList=segmenter.process(ask.getText(), JiebaSegmenter.SegMode.SEARCH);
+                    for(SegToken segToken:segTokenList){
+                        System.out.println(segToken.word.toString());
+                        askForJeiba=askForJeiba+segToken.word.toString()+".*";
+                    }
+                    List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(askForJeiba);
+
                     if(! (statementsList==null)){
-                        int ran= (int)(Math.random()*42+1);
+                        int ran= (int)(Math.random()*300+1);
                         int i=ran % statementsList.size();
                         responseAns=statementsList.get(i).getText();
                     }
@@ -78,7 +94,13 @@ public class LineBotController {
                                 .build()
                                 .replyMessage(replyMessage)
                                 .execute();
-                System.out.println(response.code() + " " + response.message());
+                LineMessage lineMessage=new LineMessage();
+                lineMessage.setAskMessage(ask.getText());
+                lineMessage.setResponseMessage(responseAns);
+                lineMessage.setUserLineId(event.getSource().getUserId());
+                lineMessage.setCreateDate(new Date());
+                lineMessageService.save(lineMessage);
+                System.out.println(response.code() + " " + responseAns);
             }
         } catch (Exception e) {
             e.printStackTrace();

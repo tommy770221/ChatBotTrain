@@ -1,0 +1,1 @@
+mvn install:install-file -Dfile=jieba-analysis-1.0.3-SNAPSHOT.jar -DgroupId=com.huaban -DartifactId=jieba-analysis -Dversion=1.0.3-SNAPSHOT -Dpackaging=jar

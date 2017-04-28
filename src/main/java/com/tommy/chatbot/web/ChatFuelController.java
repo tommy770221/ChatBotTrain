@@ -1,5 +1,7 @@
 package com.tommy.chatbot.web;
 
+import com.huaban.analysis.jieba.JiebaSegmenter;
+import com.huaban.analysis.jieba.SegToken;
 import com.tommy.chatbot.domain.Statements;
 import com.tommy.chatbot.service.StatementsMongoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 /**
@@ -110,8 +113,23 @@ public class ChatFuelController {
     public String gallery(HttpServletRequest httpServletRequest,@RequestParam(value = "ask",required = false)String ask) {
         String responseAns= "對不起,我聽不懂你再說什麼";
         String responseAnsTwo= "對不起,我聽不懂你再說什麼";
+        String askForJeiba="";
         try {
-            List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(ask);
+            ask=new String(ask.getBytes(),"iso-8859-1");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        JiebaSegmenter segmenter = new JiebaSegmenter();
+        System.out.println(segmenter.process(ask, JiebaSegmenter.SegMode.SEARCH).toString());
+        List<SegToken> segTokenList=segmenter.process(ask, JiebaSegmenter.SegMode.SEARCH);
+        for(SegToken segToken:segTokenList){
+            System.out.println(segToken.word.toString());
+            askForJeiba=askForJeiba+segToken.word.toString()+".*";
+        }
+
+
+        try {
+            List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(askForJeiba);
             if(! (statementsList==null)){
                 int ran= (int)(Math.random()*42+1);
                 int i=ran % statementsList.size();
@@ -123,11 +141,20 @@ public class ChatFuelController {
         }
 
 
-        return "{\n" +
-                " \"messages\": [\n" +
-                "   {\"text\": \""+responseAns+"!\"},\n" +
-                "   {\"text\": \"How can I help you?\"}\n" +
-                " ]\n" +
-                "}";
+        try {
+            return "{\n" +
+                    " \"messages\": [\n" +
+                    "   {\"text\": \""+new String(responseAns.getBytes(),"iso-8859-1")+"!\"},\n" +
+                    "   {\"text\": \""+new String(responseAnsTwo.getBytes(),"iso-8859-1")+"\"}\n" +
+                    " ]\n" +
+                    "}";
+        } catch (UnsupportedEncodingException e) {
+            return "{\n" +
+                    " \"messages\": [\n" +
+                    "   {\"text\": \"不好意思目前無法聽懂你的話!\"},\n" +
+                    "   {\"text\": \"不好意思目前無法聽懂你的話!\"}\n" +
+                    " ]\n" +
+                    "}";
+        }
     }
 }
