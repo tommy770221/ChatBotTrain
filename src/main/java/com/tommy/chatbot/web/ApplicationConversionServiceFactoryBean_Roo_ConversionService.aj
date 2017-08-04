@@ -4,7 +4,8 @@
 package com.tommy.chatbot.web;
 
 import com.tommy.chatbot.domain.Customer;
-import com.tommy.chatbot.web.ApplicationConversionServiceFactoryBean;
+import com.tommy.chatbot.domain.Disease;
+import com.tommy.chatbot.domain.HospitalInfo;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.format.FormatterRegistry;
@@ -12,28 +13,20 @@ import org.springframework.format.FormatterRegistry;
 privileged aspect ApplicationConversionServiceFactoryBean_Roo_ConversionService {
     
     declare @type: ApplicationConversionServiceFactoryBean: @Configurable;
-    
-    public Converter<Customer, String> ApplicationConversionServiceFactoryBean.getCustomerToStringConverter() {
-        return new org.springframework.core.convert.converter.Converter<com.tommy.chatbot.domain.Customer, java.lang.String>() {
-            public String convert(Customer customer) {
-                return new StringBuilder().append(customer.getFirstName()).append(' ').append(customer.getLastName()).toString();
-            }
-        };
-    }
-    
-    public Converter<String, Customer> ApplicationConversionServiceFactoryBean.getStringToCustomerConverter() {
-        return new org.springframework.core.convert.converter.Converter<java.lang.String, com.tommy.chatbot.domain.Customer>() {
-            public com.tommy.chatbot.domain.Customer convert(String id) {
-                return getObject().convert(getObject().convert(id, Long.class), Customer.class);
-            }
-        };
-    }
-    
+
+
+
     public void ApplicationConversionServiceFactoryBean.installLabelConverters(FormatterRegistry registry) {
         registry.addConverter(getCustomerToStringConverter());
         registry.addConverter(getStringToCustomerConverter());
+        registry.addConverter(getDiseaseToStringConverter());
+        registry.addConverter(getIdToDiseaseConverter());
+        registry.addConverter(getStringToDiseaseConverter());
+        registry.addConverter(getHospitalInfoToStringConverter());
+        registry.addConverter(getIdToHospitalInfoConverter());
+        registry.addConverter(getStringToHospitalInfoConverter());
     }
-    
+
     public void ApplicationConversionServiceFactoryBean.afterPropertiesSet() {
         super.afterPropertiesSet();
         installLabelConverters(getObject());

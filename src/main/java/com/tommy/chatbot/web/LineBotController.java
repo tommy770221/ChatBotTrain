@@ -53,6 +53,7 @@ public class LineBotController {
        //LineBotCallbackRequestParser lineBotCallbackRequestParser=new LineBotCallbackRequestParser(new LineSignatureValidator(channelToken.getBytes()));// StringWriter writer = new StringWriter();
        // IOUtils.copy(httpServletRequest.getInputStream(), writer, "utf-8");
        String theString ="";
+        boolean isMiss;
        // System.out.println(theString);
         try {
            // CallbackRequest callbackRequest = lineBotCallbackRequestParser.handle(httpServletRequest);
@@ -60,47 +61,66 @@ public class LineBotController {
             CallbackRequest callbackRequest = (CallbackRequest) objectMapper.readValue(json, CallbackRequest.class);
             List<Event> events= callbackRequest.getEvents();
             for(Event event:events){
-                MessageEvent env=(MessageEvent) event;
-                MessageEvent<TextMessageContent> askContent=(MessageEvent<TextMessageContent>) event;
-                TextMessage ask=new TextMessage(askContent.getMessage().getText());
-                String askForJeiba=".*";
-                String responseAns= "對不起,我聽不懂你再說什麼";
-                try {
-                    JiebaSegmenter segmenter = new JiebaSegmenter();
-                    System.out.println(segmenter.process(ask.getText(), JiebaSegmenter.SegMode.SEARCH).toString());
-                    List<SegToken> segTokenList=segmenter.process(ask.getText(), JiebaSegmenter.SegMode.SEARCH);
-                    for(SegToken segToken:segTokenList){
-                        System.out.println(segToken.word.toString());
-                        askForJeiba=askForJeiba+segToken.word.toString()+".*";
-                    }
-                    List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(askForJeiba);
+                if(event instanceof MessageEvent) {
+                    MessageEvent env=(MessageEvent) event;
+                    if(env.getMessage() instanceof TextMessageContent) {
+                    MessageEvent<TextMessageContent> askContent=(MessageEvent<TextMessageContent>) event;
+                    TextMessage ask=new TextMessage(askContent.getMessage().getText());
+                    String askForJeiba=".*";
+                    String responseAns= "對不起,我聽不懂你再說什麼";
 
-                    if(! (statementsList==null)){
-                        int ran= (int)(Math.random()*300+1);
-                        int i=ran % statementsList.size();
-                        responseAns=statementsList.get(i).getText();
+                        JiebaSegmenter segmenter = new JiebaSegmenter();
+                        System.out.println(segmenter.process(ask.getText(), JiebaSegmenter.SegMode.SEARCH).toString());
+                        List<SegToken> segTokenList=segmenter.process(ask.getText(), JiebaSegmenter.SegMode.SEARCH);
+                        for(SegToken segToken:segTokenList){
+                            System.out.println(segToken.word.toString());
+                            askForJeiba=askForJeiba+segToken.word.toString()+".*";
+                        }
+                        List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(askForJeiba);
+
+                        if(! (statementsList==null)){
+                            int ran= (int)(Math.random()*300+1);
+                            if(statementsList.size()!=0){
+                                int i=ran % statementsList.size();
+                                responseAns=statementsList.get(i).getText();
+                                TextMessage textMessage = new TextMessage(responseAns);
+                                ReplyMessage replyMessage = new ReplyMessage(
+                                        env.getReplyToken() ,
+                                        textMessage
+                                );
+                                Response<BotApiResponse> response =
+                                        LineMessagingServiceBuilder
+                                                .create(channelToken)
+                                                .build()
+                                                .replyMessage(replyMessage)
+                                                .execute();
+                            }else{
+                                responseAns=askContent.getMessage().getText();
+                                TextMessage textMessage = new TextMessage(askContent.getMessage().getText());
+                                ReplyMessage replyMessage = new ReplyMessage(
+                                        env.getReplyToken() ,
+                                        textMessage
+                                );
+                                Response<BotApiResponse> response =
+                                        LineMessagingServiceBuilder
+                                                .create(channelToken)
+                                                .build()
+                                                .replyMessage(replyMessage)
+                                                .execute();
+                            }
+                        }
+
+                    LineMessage lineMessage=new LineMessage();
+                    lineMessage.setAskMessage(ask.getText());
+                    lineMessage.setResponseMessage(responseAns);
+                    lineMessage.setUserLineId(event.getSource().getUserId());
+                    lineMessage.setCreateDate(new Date());
+                    lineMessageService.save(lineMessage);
+                    }else{
+                        System.out.println(env.getMessage().getClass().getClass().getName());
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
+
                 }
-                TextMessage textMessage = new TextMessage(responseAns);
-                ReplyMessage replyMessage = new ReplyMessage(
-                        env.getReplyToken() ,
-                        textMessage
-                );
-                Response<BotApiResponse> response =
-                        LineMessagingServiceBuilder
-                                .create(channelToken)
-                                .build()
-                                .replyMessage(replyMessage)
-                                .execute();
-                LineMessage lineMessage=new LineMessage();
-                lineMessage.setAskMessage(ask.getText());
-                lineMessage.setResponseMessage(responseAns);
-                lineMessage.setUserLineId(event.getSource().getUserId());
-                lineMessage.setCreateDate(new Date());
-                lineMessageService.save(lineMessage);
-                System.out.println(response.code() + " " + responseAns);
             }
         } catch (Exception e) {
             e.printStackTrace();

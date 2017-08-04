@@ -2,7 +2,9 @@ package com.tommy.chatbot.web;
 
 import com.huaban.analysis.jieba.JiebaSegmenter;
 import com.huaban.analysis.jieba.SegToken;
+import com.tommy.chatbot.domain.FBMessage;
 import com.tommy.chatbot.domain.Statements;
+import com.tommy.chatbot.service.FBMessageMongoService;
 import com.tommy.chatbot.service.StatementsMongoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -24,6 +27,9 @@ public class ChatFuelController {
 
     @Autowired
     private StatementsMongoService statementsMongoService;
+
+    @Autowired
+    private FBMessageMongoService fbMessageMongoService;
 
     @RequestMapping(value = "block",method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
@@ -115,7 +121,8 @@ public class ChatFuelController {
         String responseAnsTwo= "對不起,我聽不懂你再說什麼";
         String askForJeiba="";
         try {
-            ask=new String(ask.getBytes(),"iso-8859-1");
+            ask=new String(ask.getBytes(),"utf8");
+            System.out.println("ask : "+ ask);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
@@ -127,6 +134,12 @@ public class ChatFuelController {
             askForJeiba=askForJeiba+segToken.word.toString()+".*";
         }
 
+        FBMessage fbMessage=new FBMessage();
+        fbMessage.setCreateDate(new Date());
+        fbMessage.setAskMessage(ask);
+        fbMessage.setResponseMessage(responseAns);
+        fbMessage.getMessagerId();
+        fbMessageMongoService.save(fbMessage);
 
         try {
             List<Statements> statementsList=statementsMongoService.findStatementsByRegexpResponse(askForJeiba);

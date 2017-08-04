@@ -6,5 +6,13 @@
         <menu:category id="c_customer" z="Wa+bVSiDyYo/wX1nGU1B/z+OKhE=">
             <menu:item id="i_customer_new" messageCode="global_menu_new" url="/customers?form" z="d9+YIotZHp6KZLGKwwnMVzPvh8k="/>
         </menu:category>
+        <menu:category id="c_disease" z="FWPlgDSWNfvJ+8RHJKyO9yTstKc=">
+            <menu:item id="i_disease_new" messageCode="global_menu_new" url="/diseases?form" z="HIEchp7xN3jNgn0D10vwRE6vFw0="/>
+            <menu:item id="i_disease_list" messageCode="global_menu_list" url="/diseases?page=1&amp;size=${empty param.size ? 10 : param.size}" z="5nKNogd6RG303LwWmcwok7EQt94="/>
+        </menu:category>
+        <menu:category id="c_hospitalinfo" z="zKFLgehdFaKNHyzQA6y71T0RewY=">
+            <menu:item id="i_hospitalinfo_new" messageCode="global_menu_new" url="/hospitalinfoes?form" z="cB/Tw1jAAjlKw1so5+rZzltlzzA="/>
+            <menu:item id="i_hospitalinfo_list" messageCode="global_menu_list" url="/hospitalinfoes?page=1&amp;size=${empty param.size ? 10 : param.size}" z="ts1l1v0NAqFArudy++lB1kfQ3cY="/>
+        </menu:category>
     </menu:menu>
 </div>

@@ -73,4 +73,5 @@
     </property>
   </bean>
 <bean class="com.tommy.chatbot.web.ApplicationConversionServiceFactoryBean" id="applicationConversionService"/>
+    <import resource="classpath:META-INF/spring/applicationContext.xml" />
 </beans>
