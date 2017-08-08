@@ -44,14 +44,14 @@ public class FacebookWebhookController {
     @Autowired
     private FBMessageMongoService fbMessageMongoService;
 
-    @RequestMapping(value = "/webhook",method = RequestMethod.GET, produces = "text/plain")
+    @RequestMapping(value = "/webhook",method = {RequestMethod.GET,RequestMethod.POST}, produces = "text/plain")
     @ResponseBody
-    public String gallery(HttpServletRequest httpServletRequest, @RequestParam(value = "ask",required = false)String ask,
+    public String gallery(HttpServletRequest httpServletRequest,
                                                                  @RequestParam(value = "hub.mode",required = false)String mode,
                                                                  @RequestParam(value = "hub.challenge",required = false)String challenge,
                                                                  @RequestParam(value = "hub.verify_token",required = false)String verifyToken) {
 
-         String pageAccessToken="EAAYbC9VcMasBAKZCajmOOlXqHDeDtqykaAU6zaHVviK40fKooi9nS4fQpKqKel0BJoqQeHe3wUUmfce1TyJw9ZC9nYueXxXKjmWdojf4pHnQhQZARXHmphknrr1L9blImmEhs5nNzIy66UrIMwCdXSCfZCcweIwACMLEMTEfxgZDZD";
+         String pageAccessToken="EAABhI56kvksBAH4h1LLWh95CSR0NrXNy0Lh2453RTPA8NYcF5MHpcOXrWGzqsAjWdaBnreRkMY3dZBU8ZAZCqZCMfiYDBjh67tjVHmIVCjNAKQsIMjpVbSzNyR3aHucK6k179ZA4S5m3CTGx73TxSZBo9UKonYPw959Bz1LZBBBNQZDZD";
         try {
             String request=getRequestBodyAsString(httpServletRequest);
             System.out.println("getRequestBodyAsString(httpServletRequest) : "+request);
